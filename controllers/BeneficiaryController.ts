@@ -11,8 +11,13 @@ export class BeneficiaryController {
             res.send(201, beneficiary);
             next();
         } catch (error) {
-            logger.error('Error creating beneficiary:', error);
-            res.send(500, error);
+            if ((error as any).code === 11000) {
+                const duplicateField = Object.keys((error as any).keyValue)[0];
+                res.send(409, { message: `${duplicateField.charAt(0).toUpperCase() + duplicateField.slice(1)} ${(error as any).keyValue[duplicateField]} already registered.` });
+            } else {
+                logger.error('Error creating beneficiary:', error);
+                res.send(500, error);
+            }
             next();
         }
     }
